@@ -10,17 +10,20 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
             background-color: #ffdeeb;
             font-family: 'Arial', sans-serif;
             text-align: center;
+            overflow: hidden; /* Prevents scrollbars when button moves */
         }
         #container {
             background: white;
             padding: 30px;
             border-radius: 20px;
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 10;
         }
         h1 { color: #d63384; }
         .buttons { margin-top: 20px; }
@@ -33,9 +36,27 @@
             transition: 0.3s;
         }
         #yesBtn { background-color: #4CAF50; color: white; margin-right: 10px; }
-        #noBtn { background-color: #f44336; color: white; position: relative; }
-        .cat-img { width: 250px; border-radius: 15px; margin-bottom: 20px; }
-        .hidden { display: none; }
+        /* No button needs absolute position to move freely later */
+        #noBtn { background-color: #f44336; color: white; position: relative; transition: all 0.1s ease; }
+        
+        .cat-img { width: 300px; height: auto; border-radius: 15px; margin-bottom: 20px; object-fit: cover;}
+        .hidden { display: none !important; }
+
+        /* Styles for the Hover Popup */
+        #hover-popup {
+            position: fixed;
+            bottom: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 20;
+            width: 80%;
+            max-width: 300px;
+        }
+        #popup-text { font-weight: bold; color: #333; margin: 10px 0 0 0; }
     </style>
 </head>
 <body>
@@ -47,45 +68,101 @@
             
             <div class="buttons">
                 <button id="yesBtn" onclick="celebrate()">Yes!</button>
-                <button id="noBtn" onmouseover="moveButton()" onclick="askSure()">No</button>
+                <button id="noBtn" onmouseover="startHoverSequence()" onmouseleave="stopHoverSequence()" onclick="moveButton()">No</button>
             </div>
         </div>
 
         <div id="success-screen" class="hidden">
-            <img class="cat-img" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNXA1bmZ6bmZ3NjZidWp4bmZ3NjZidWp4bmZ3NjZidWp4bmZ3JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/GeimqsH0TLHC4iedzE/giphy.gif" alt="Happy Cat">
+            <img class="cat-img" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNXA1bmZ6bmZ3NjZidWp4bmZ3NjZidWp4bmZ3NjZidWp4bmZ3JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/GeimqsH0TLHC4iedzE/giphy.gif" alt="Happy Us">
             <h1>YAY! See you on the 14th! ❤️</h1>
         </div>
     </div>
 
-    <script>
-        let noCount = 0;
-        const phrases = ["Are you sure?", "Really sure?", "Think again!", "Last chance!", "Surely not!", "You're breaking my heart ;("];
+    <div id="hover-popup" class="hidden">
+        <img id="popup-img" class="cat-img hidden" src="" alt="Reaction">
+        <p id="popup-text"></p>
+    </div>
 
+    <script>
+        // Variables to control timers and state
+        let hoverTimer1, hoverTimer2;
+        let hoverStage = 0; 
+
+        // Links for the reactions
+        const speedSighGif = "https://media.giphy.com/media/Sid4QgwDxJfDMZ9dtF/giphy.gif?cid=790b7611nsy3xqynl2l6m6u5u6u5u6u5u6u5u6u5&ep=v1_gifs_search&rid=giphy.gif&ct=g";
+        const cryingCatGif = "https://media.giphy.com/media/OPU6pzxn8Y1qE/giphy.gif?cid=ecf05e47c5g1q6q2q2q2q2q2q2q2q2q2q2q2q2q2&rid=giphy.gif&ct=g";
+
+        // Elements used in popups
+        const popup = document.getElementById('hover-popup');
+        const popupText = document.getElementById('popup-text');
+        const popupImg = document.getElementById('popup-img');
+
+        function startHoverSequence() {
+            // Only start if we haven't already finished the sequence
+            if(hoverStage === 3) return; 
+
+            popup.classList.remove('hidden');
+
+            // Stage 1: Immediate "Why no?"
+            if (hoverStage === 0) {
+                popupText.innerText = "Why no? 🥺";
+                popupImg.classList.add('hidden');
+            }
+
+            // Start Timer for Stage 2 (2 seconds later)
+            clearTimeout(hoverTimer1); // Clear any existing timers just in case
+            hoverTimer1 = setTimeout(() => {
+                hoverStage = 2;
+                popupText.innerText = "Are you serious right now?";
+                popupImg.src = speedSighGif;
+                popupImg.classList.remove('hidden');
+
+                // Start Timer for Stage 3 (Another 2 seconds later = 4s total)
+                 clearTimeout(hoverTimer2);
+                hoverTimer2 = setTimeout(() => {
+                    hoverStage = 3;
+                    popupText.innerText = "Do you not love me anymore? 😭";
+                    popupImg.src = cryingCatGif;
+                    // Once stage 3 hits, the button runs away for good
+                    document.getElementById('noBtn').setAttribute('onmouseover', 'moveButton()');
+                     document.getElementById('noBtn').innerText = "Okay I get it...";
+                }, 2500); // Wait 2.5s for Speed to sigh
+
+            }, 2000); // Wait 2s before showing Speed
+        }
+
+        // If she stops hovering before the timers finish, reset everything.
+        function stopHoverSequence() {
+            // If we hit stage 3, don't reset, let the button run away
+            if(hoverStage === 3) {
+                 popup.classList.add('hidden');
+                 moveButton();
+                 return;
+            }
+            clearTimeout(hoverTimer1);
+            clearTimeout(hoverTimer2);
+            popup.classList.add('hidden');
+            hoverStage = 0; // Reset stage so it starts over next time
+            popupImg.classList.add('hidden');
+        }
+
+        // The classic button dodge
         function moveButton() {
             const noBtn = document.getElementById('noBtn');
-            const x = Math.random() * (window.innerWidth - noBtn.offsetWidth);
-            const y = Math.random() * (window.innerHeight - noBtn.offsetHeight);
-            
+            // Make sure it's absolute so it can move
             noBtn.style.position = 'absolute';
+            
+            const x = Math.random() * (window.innerWidth - noBtn.offsetWidth - 100);
+            const y = Math.random() * (window.innerHeight - noBtn.offsetHeight - 100);
+            
             noBtn.style.left = `${x}px`;
             noBtn.style.top = `${y}px`;
         }
 
-        function askSure() {
-            const noBtn = document.getElementById('noBtn');
-            const question = document.getElementById('question');
-            if (noCount < phrases.length) {
-                noBtn.innerText = phrases[noCount];
-                noCount++;
-            } else {
-                noBtn.innerText = "Okay, fine... click Yes now!";
-            }
-        }
-
         function celebrate() {
             document.getElementById('main-content').classList.add('hidden');
+            document.getElementById('hover-popup').classList.add('hidden'); // Hide any active popups
             document.getElementById('success-screen').classList.remove('hidden');
-            // Adding a little extra flair
             document.body.style.backgroundColor = "#ff85a1";
         }
     </script>
