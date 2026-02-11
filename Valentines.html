@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Special Question ❤️</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #ffdeeb;
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+        }
+        #container {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        h1 { color: #d63384; }
+        .buttons { margin-top: 20px; }
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        #yesBtn { background-color: #4CAF50; color: white; margin-right: 10px; }
+        #noBtn { background-color: #f44336; color: white; position: relative; }
+        .cat-img { width: 250px; border-radius: 15px; margin-bottom: 20px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="container">
+        <div id="main-content">
+            <img id="display-img" class="cat-img" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHIycXpueXF5bmZ3NjZidWp4bmZ3NjZidWp4bmZ3NjZidWp4bmZ3JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/c76IJLufpNwSULPk77/giphy.gif" alt="Cute Cat">
+            <h1 id="question">Will you be my Valentine? 🌹</h1>
+            
+            <div class="buttons">
+                <button id="yesBtn" onclick="celebrate()">Yes!</button>
+                <button id="noBtn" onmouseover="moveButton()" onclick="askSure()">No</button>
+            </div>
+        </div>
+
+        <div id="success-screen" class="hidden">
+            <img class="cat-img" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNXA1bmZ6bmZ3NjZidWp4bmZ3NjZidWp4bmZ3NjZidWp4bmZ3JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/GeimqsH0TLHC4iedzE/giphy.gif" alt="Happy Cat">
+            <h1>YAY! See you on the 14th! ❤️</h1>
+        </div>
+    </div>
+
+    <script>
+        let noCount = 0;
+        const phrases = ["Are you sure?", "Really sure?", "Think again!", "Last chance!", "Surely not!", "You're breaking my heart ;("];
+
+        function moveButton() {
+            const noBtn = document.getElementById('noBtn');
+            const x = Math.random() * (window.innerWidth - noBtn.offsetWidth);
+            const y = Math.random() * (window.innerHeight - noBtn.offsetHeight);
+            
+            noBtn.style.position = 'absolute';
+            noBtn.style.left = `${x}px`;
+            noBtn.style.top = `${y}px`;
+        }
+
+        function askSure() {
+            const noBtn = document.getElementById('noBtn');
+            const question = document.getElementById('question');
+            if (noCount < phrases.length) {
+                noBtn.innerText = phrases[noCount];
+                noCount++;
+            } else {
+                noBtn.innerText = "Okay, fine... click Yes now!";
+            }
+        }
+
+        function celebrate() {
+            document.getElementById('main-content').classList.add('hidden');
+            document.getElementById('success-screen').classList.remove('hidden');
+            // Adding a little extra flair
+            document.body.style.backgroundColor = "#ff85a1";
+        }
+    </script>
+</body>
+</html>
