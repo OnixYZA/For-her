@@ -25,42 +25,60 @@
             position: relative;
             z-index: 10;
         }
-        h1 { color: #d63384; transition: 0.3s; }
-        .buttons { margin-top: 20px; }
+        h1 { color: #d63384; }
+        .buttons { margin-top: 20px; height: 60px; }
         button {
             padding: 15px 30px;
             font-size: 18px;
             border: none;
             border-radius: 10px;
             cursor: pointer;
-            transition: 0.1s;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         #yesBtn { background-color: #4CAF50; color: white; margin-right: 10px; }
-        #noBtn { background-color: #f44336; color: white; position: relative; z-index: 100; }
+        #noBtn { 
+            background-color: #f44336; 
+            color: white; 
+            position: relative; 
+            z-index: 100;
+            border: 2px solid #ffffff;
+        }
         .cat-img { width: 300px; height: auto; border-radius: 15px; margin-bottom: 20px; }
         .hidden { display: none !important; }
 
-        /* The Drama Pop-up */
         #popup-box {
             position: fixed;
-            top: 10%;
+            top: 5%;
             left: 50%;
             transform: translateX(-50%);
             background: white;
-            padding: 20px;
+            padding: 15px;
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             z-index: 1000;
-            width: 300px; /* Made slightly wider for text */
+            width: 280px;
+        }
+
+        /* Styling for the "Come Back" hint */
+        #idle-msg {
+            position: fixed;
+            color: #d63384;
+            font-weight: bold;
+            font-style: italic;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 5px 10px;
+            border-radius: 10px;
+            pointer-events: none; /* Mouse goes through it */
+            z-index: 99;
         }
     </style>
 </head>
-<body>
+<body onmousemove="resetIdleTimer()">
 
     <div id="container">
         <div id="main-content">
-            <img id="display-img" class="cat-img" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHIycXpueXF5bmZ3NjZidWp4bmZ3NjZidWp4bmZ3NjZidWp4bmZ3JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/c76IJLufpNwSULPk77/giphy.gif">
-            <h1 id="question">Will you be my Valentine? 🌹</h1>
+            <img class="cat-img" src="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHIycXpueXF5bmZ3NjZidWp4bmZ3NjZidWp4bmZ3NjZidWp4bmZ3JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/c76IJLufpNwSULPk77/giphy.gif">
+            <h1>Will you be my Valentine? 🌹</h1>
             
             <div class="buttons">
                 <button id="yesBtn" onclick="celebrate()">Yes!</button>
@@ -75,45 +93,40 @@
     </div>
 
     <div id="popup-box" class="hidden">
-        <img id="popup-img" class="cat-img" src="" style="width: 100%;">
-        <p id="popup-text" style="font-weight: bold; font-size: 1.2rem; margin-top: 10px;"></p>
+        <img id="popup-img" class="cat-img" src="" style="width: 100%; margin-bottom: 10px;">
+        <p id="popup-text" style="font-weight: bold; font-size: 1.1rem; margin: 0;"></p>
     </div>
+
+    <div id="idle-msg" class="hidden">Wait, come back! You haven't answered yet! 😏</div>
 
     <script>
         let questionIndex = 0;
         let timerRunning = false;
+        let idleTimer;
         
-        // HERE ARE THE 7 CREATIVE STAGES
         const content = [
-            { text: "Oops! Wrong button! 😅", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3Z5eGxpbnVnZnJ3NndoejB2ZnF6cW54aWZ5cjd4aWZ5cjd4aWZ5ciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/VbnUQpnihPSIgIXuZv/giphy.gif" }, 
-            { text: "No? Really? 🥺", img: "https://media.giphy.com/media/OPU6pzxn8Y1qE/giphy.gif" },
-            { text: "Are you serious right now?", img: "https://media.giphy.com/media/Sid4QgwDxJfDMZ9dtF/giphy.gif" }, // Speed
-            { text: "Pookie please... 😭", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHIycXpueXF5bmZ3NjZidWp4bmZ3NjZidWp4bmZ3NjZidWp4bmZ3JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/qUIm5wu6LAAog/giphy.gif" },
-            { text: "Don't do this to me! 💔", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHIycXpueXF5bmZ3NjZidWp4bmZ3NjZidWp4bmZ3NjZidWp4bmZ3JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/BEob5zFkS7LWQGnQP4/giphy.gif" },
-            { text: "I'm gonna cry... like a lot. 🌊", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHIycXpueXF5bmZ3NjZidWp4bmZ3NjZidWp4bmZ3NjZidWp4bmZ3JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/mlvseq9yvZhba/giphy.gif" },
-            { text: "Ok fine, I'll just go eat worms. 🪱", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHIycXpueXF5bmZ3NjZidWp4bmZ3NjZidWp4bmZ3NjZidWp4bmZ3JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/CM1rHbKDMd2BW/giphy.gif" }
+            { text: "Oops! Wrong button! 😅", img: "https://i.giphy.com/media/VbnUQpnihPSIgIXuZv/giphy.gif" }, 
+            { text: "No? Really? 🥺", img: "https://i.giphy.com/media/OPU6pzxn8Y1qE/giphy.gif" },
+            { text: "Are you serious right now?", img: "https://i.giphy.com/media/Sid4QgwDxJfDMZ9dtF/giphy.gif" }, 
+            { text: "Pookie please... 😭", img: "https://i.giphy.com/media/qUIm5wu6LAAog/giphy.gif" },
+            { text: "Don't do this to me! 💔", img: "https://i.giphy.com/media/BEob5zFkS7LWQGnQP4/giphy.gif" },
+            { text: "I'm gonna cry... like a lot. 🌊", img: "https://i.giphy.com/media/mlvseq9yvZhba/giphy.gif" },
+            { text: "Ok fine, I'll just go eat worms. 🪱", img: "https://i.giphy.com/media/CM1rHbKDMd2BW/giphy.gif" }
         ];
 
         function handleHover() {
             moveButton();
-            
-            // Start the sequence only once
+            document.getElementById('idle-msg').classList.add('hidden'); // Hide msg if she's active
             if (!timerRunning) {
                 timerRunning = true;
-                
-                // Show the first one immediately
-                if (questionIndex < content.length) {
-                    showNextQuestion();
-                }
-                
-                // Set interval to change pop-up every 2 seconds
+                showNextQuestion();
                 const hoverInterval = setInterval(() => {
                     if (questionIndex < content.length) {
                         showNextQuestion();
                     } else {
                         clearInterval(hoverInterval);
                     }
-                }, 2000);
+                }, 2500);
             }
         }
 
@@ -125,25 +138,43 @@
             popup.classList.remove('hidden');
             pText.innerText = content[questionIndex].text;
             pImg.src = content[questionIndex].img;
-
             questionIndex++;
         }
 
         function moveButton() {
             const noBtn = document.getElementById('noBtn');
-            noBtn.style.position = 'absolute';
+            noBtn.style.position = 'fixed'; 
             
-            // Random position within screen bounds
-            const x = Math.random() * (window.innerWidth - noBtn.offsetWidth - 80);
-            const y = Math.random() * (window.innerHeight - noBtn.offsetHeight - 80);
+            const padding = 100;
+            const x = Math.random() * (window.innerWidth - (padding * 2)) + padding;
+            const y = Math.random() * (window.innerHeight - (padding * 2)) + padding;
             
             noBtn.style.left = `${x}px`;
             noBtn.style.top = `${y}px`;
         }
 
+        // Logic for the Idle Message
+        function resetIdleTimer() {
+            clearTimeout(idleTimer);
+            const msg = document.getElementById('idle-msg');
+            msg.classList.add('hidden');
+
+            idleTimer = setTimeout(() => {
+                const noBtn = document.getElementById('noBtn');
+                if (!document.getElementById('main-content').classList.contains('hidden')) {
+                    msg.classList.remove('hidden');
+                    // Position message near the "No" button
+                    msg.style.left = (parseInt(noBtn.style.left) || 0) + "px";
+                    msg.style.top = (parseInt(noBtn.style.top) - 40) + "px";
+                }
+            }, 5000); // 5 seconds of no movement triggers it
+        }
+
         function celebrate() {
+            clearTimeout(idleTimer);
             document.getElementById('main-content').classList.add('hidden');
             document.getElementById('popup-box').classList.add('hidden');
+            document.getElementById('idle-msg').classList.add('hidden');
             document.getElementById('success-screen').classList.remove('hidden');
             document.body.style.backgroundColor = "#ff85a1";
         }
