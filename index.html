@@ -3,175 +3,193 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A Special Question ❤️</title>
+    
+    <title>Not a suspicious link</title>
+    <meta property="og:title" content="Not a suspicious link">
+    <meta property="og:description" content="Trust me, just click it... 😉">
+    <meta property="og:image" content="https://media.tenor.com/IC9_rj_S_8AAAAi/cat-kiss.gif">
+
     <style>
         body {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
+            height: 100vh;
             margin: 0;
             background-color: #ffdeeb;
-            font-family: 'Arial', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             text-align: center;
             overflow: hidden; 
+            touch-action: none; /* Prevents scrolling so they can't 'catch' the button by scrolling */
         }
         #container {
             background: white;
             padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(214, 51, 132, 0.2);
             position: relative;
             z-index: 10;
+            max-width: 90%;
         }
-        h1 { color: #d63384; }
-        .buttons { margin-top: 20px; height: 60px; }
+        h1 { color: #d63384; font-size: 1.8rem; }
+        .buttons { margin-top: 25px; height: 60px; position: relative; }
+        
         button {
             padding: 15px 30px;
             font-size: 18px;
+            font-weight: bold;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            outline: none;
         }
-        #yesBtn { background-color: #4CAF50; color: white; margin-right: 10px; }
+
+        #yesBtn { background-color: #4CAF50; color: white; transition: transform 0.2s; }
+        #yesBtn:active { transform: scale(0.9); }
+
         #noBtn { 
             background-color: #f44336; 
             color: white; 
-            position: relative; 
-            z-index: 100;
-            border: 2px solid #ffffff;
+            position: fixed; /* Fixed relative to SCREEN, not container */
+            z-index: 1000;
+            transition: top 0.3s ease, left 0.3s ease; /* Smooth movement */
         }
-        .cat-img { width: 300px; height: auto; border-radius: 15px; margin-bottom: 20px; }
+
+        .cat-img { width: 250px; height: 250px; border-radius: 20px; margin-bottom: 20px; object-fit: cover; }
         .hidden { display: none !important; }
 
+        /* Stable Popup Design */
         #popup-box {
             position: fixed;
-            top: 5%;
+            top: 15%;
             left: 50%;
             transform: translateX(-50%);
             background: white;
-            padding: 15px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            z-index: 1000;
-            width: 280px;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            z-index: 2000;
+            width: 80%;
+            max-width: 300px;
+            border: 3px solid #ffdeeb;
         }
 
-        /* Styling for the "Come Back" hint */
         #idle-msg {
             position: fixed;
             color: #d63384;
             font-weight: bold;
-            font-style: italic;
-            background: rgba(255, 255, 255, 0.8);
-            padding: 5px 10px;
-            border-radius: 10px;
-            pointer-events: none; /* Mouse goes through it */
-            z-index: 99;
+            font-size: 0.9rem;
+            background: white;
+            padding: 8px 15px;
+            border-radius: 50px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 999;
+            pointer-events: none;
         }
     </style>
 </head>
-<body onmousemove="resetIdleTimer()">
+<body onmousemove="resetIdleTimer()" ontouchstart="resetIdleTimer()">
 
     <div id="container">
         <div id="main-content">
-            <img class="cat-img" src="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHIycXpueXF5bmZ3NjZidWp4bmZ3NjZidWp4bmZ3NjZidWp4bmZ3JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/c76IJLufpNwSULPk77/giphy.gif">
+            <img class="cat-img" src="https://media.tenor.com/0v8U91S8f70AAAAi/peach-goma.gif" alt="Cute Cat">
             <h1>Will you be my Valentine? 🌹</h1>
-            
             <div class="buttons">
                 <button id="yesBtn" onclick="celebrate()">Yes!</button>
-                <button id="noBtn" onmouseover="handleHover()">No</button>
+                <button id="noBtn" onmouseover="handleInteraction()" ontouchstart="handleInteraction()">No</button>
             </div>
         </div>
 
         <div id="success-screen" class="hidden">
-            <img class="cat-img" src="https://github.com/OnixYZA/For-her/blob/main/US.jpeg?raw=true">
+            <img class="cat-img" src="https://media.tenor.com/IC9_rj_S_8AAAAi/cat-kiss.gif" alt="Happy!">
             <h1>YAY! See you on the 14th! ❤️</h1>
         </div>
     </div>
 
     <div id="popup-box" class="hidden">
-        <img id="popup-img" class="cat-img" src="" style="width: 100%; margin-bottom: 10px;">
-        <p id="popup-text" style="font-weight: bold; font-size: 1.1rem; margin: 0;"></p>
+        <img id="popup-img" class="cat-img" src="" style="width: 100%; height: 200px;">
+        <p id="popup-text" style="font-weight: bold; color: #333; margin: 10px 0 0 0;"></p>
     </div>
 
-    <div id="idle-msg" class="hidden">Wait, come back! You haven't answered yet! 😏</div>
+    <div id="idle-msg" class="hidden">Wait, come back! 😏</div>
 
     <script>
-        let questionIndex = 0;
+        let stage = 0;
         let timerRunning = false;
         let idleTimer;
-        
-        const content = [
-            { text: "Oops! Wrong button! 😅", img: "https://i.giphy.com/media/VbnUQpnihPSIgIXuZv/giphy.gif" }, 
-            { text: "No? Really? 🥺", img: "https://i.giphy.com/media/OPU6pzxn8Y1qE/giphy.gif" },
-            { text: "Are you serious right now?", img: "https://i.giphy.com/media/Sid4QgwDxJfDMZ9dtF/giphy.gif" }, 
-            { text: "Pookie please... 😭", img: "https://i.giphy.com/media/qUIm5wu6LAAog/giphy.gif" },
-            { text: "Don't do this to me! 💔", img: "https://i.giphy.com/media/BEob5zFkS7LWQGnQP4/giphy.gif" },
-            { text: "I'm gonna cry... like a lot. 🌊", img: "https://i.giphy.com/media/mlvseq9yvZhba/giphy.gif" },
-            { text: "Ok fine, I'll just go eat worms. 🪱", img: "https://i.giphy.com/media/CM1rHbKDMd2BW/giphy.gif" }
+
+        // UPDATED STABLE GIF LINKS (Tenor)
+        const drama = [
+            { t: "Oops! Wrong button! 😅", i: "https://media.tenor.com/83u6G79pD78AAAAi/cat-confused.gif" },
+            { t: "No? Really? 🥺", i: "https://media.tenor.com/X4yD_i0_XmUAAAAi/cat-cry.gif" },
+            { t: "Are you serious right now?", i: "https://media.tenor.com/1-ZkXG7tQooAAAAC/ishowspeed-speed.gif" }, // Speed
+            { t: "Pookie please... 😭", i: "https://media.tenor.com/V7R9v97p_m4AAAAi/cat-crying.gif" },
+            { t: "Don't do this to me! 💔", i: "https://media.tenor.com/G55nF2mE-0AAAAAi/sad-cat.gif" },
+            { t: "I'm gonna cry a lot! 🌊", i: "https://media.tenor.com/f7S9p8u7-4AAAAAi/cat-water.gif" },
+            { t: "Ok fine, I'll go eat worms. 🪱", i: "https://media.tenor.com/4C-N5qC4d7oAAAAi/sad-hamster-meme.gif" } // Sad hamster is trendy/funny
         ];
 
-        function handleHover() {
+        function handleInteraction() {
             moveButton();
-            document.getElementById('idle-msg').classList.add('hidden'); // Hide msg if she's active
+            document.getElementById('idle-msg').classList.add('hidden');
+
             if (!timerRunning) {
                 timerRunning = true;
-                showNextQuestion();
-                const hoverInterval = setInterval(() => {
-                    if (questionIndex < content.length) {
-                        showNextQuestion();
-                    } else {
-                        clearInterval(hoverInterval);
-                    }
+                // Show first popup immediately
+                updatePopup();
+                // Start timer
+                setInterval(() => {
+                    if (stage < drama.length) updatePopup();
                 }, 2500);
             }
         }
 
-        function showNextQuestion() {
+        function updatePopup() {
             const popup = document.getElementById('popup-box');
             const pText = document.getElementById('popup-text');
             const pImg = document.getElementById('popup-img');
 
             popup.classList.remove('hidden');
-            pText.innerText = content[questionIndex].text;
-            pImg.src = content[questionIndex].img;
-            questionIndex++;
+            pText.innerText = drama[stage].t;
+            pImg.src = drama[stage].i;
+            
+            // Advance stage, but stop at the last one
+            if (stage < drama.length - 1) {
+                stage++;
+            }
         }
 
         function moveButton() {
-            const noBtn = document.getElementById('noBtn');
-            noBtn.style.position = 'fixed'; 
+            const btn = document.getElementById('noBtn');
+            const pad = 100; // Buffer to keep away from edges
             
-            const padding = 100;
-            const x = Math.random() * (window.innerWidth - (padding * 2)) + padding;
-            const y = Math.random() * (window.innerHeight - (padding * 2)) + padding;
+            // Calculate random position within the SAFE ZONE
+            const x = Math.random() * (window.innerWidth - btn.offsetWidth - pad) + (pad/2);
+            const y = Math.random() * (window.innerHeight - btn.offsetHeight - pad) + (pad/2);
             
-            noBtn.style.left = `${x}px`;
-            noBtn.style.top = `${y}px`;
+            btn.style.left = x + "px";
+            btn.style.top = y + "px";
         }
 
-        // Logic for the Idle Message
         function resetIdleTimer() {
             clearTimeout(idleTimer);
             const msg = document.getElementById('idle-msg');
             msg.classList.add('hidden');
 
-            idleTimer = setTimeout(() => {
-                const noBtn = document.getElementById('noBtn');
-                if (!document.getElementById('main-content').classList.contains('hidden')) {
+            // If we are still on the question screen
+            if (!document.getElementById('main-content').classList.contains('hidden')) {
+                idleTimer = setTimeout(() => {
+                    const btn = document.getElementById('noBtn');
+                    // Show message near the current button position
                     msg.classList.remove('hidden');
-                    // Position message near the "No" button
-                    msg.style.left = (parseInt(noBtn.style.left) || 0) + "px";
-                    msg.style.top = (parseInt(noBtn.style.top) - 40) + "px";
-                }
-            }, 5000); // 5 seconds of no movement triggers it
+                    msg.style.left = btn.offsetLeft + "px";
+                    msg.style.top = (btn.offsetTop - 50) + "px";
+                }, 4000);
+            }
         }
 
         function celebrate() {
-            clearTimeout(idleTimer);
             document.getElementById('main-content').classList.add('hidden');
             document.getElementById('popup-box').classList.add('hidden');
             document.getElementById('idle-msg').classList.add('hidden');
